@@ -27,14 +27,24 @@ function [ freq, Ele_field, cpu_time, LS_iter, LS_cpu_time ] = FAME_Fast_Algorit
 %     invAr_fun = @(x) FAME_Matrix_Vector_Production_Isotropic_invAr_Simple( x, B, Nx, Ny, Nz, N, Lambdas.Sigma_r, Lambdas.Pi_Qr, Lambdas.Pi_Qrs, Lambdas.D_k, Lambdas.D_ks, LS_tol);
     if shift == 0
         
-    for i = 1 : (eigen_wanted / no_orth)
-    [pre_ev,pre_ew] = eigs( @(x) FAME_Matrix_Vector_Production_Isotropic_invAr_Simple( x, B, Nx, Ny, Nz, N,...
-                         Lambdas.Sigma_r, Lambdas.Pi_Qr, Lambdas.Pi_Qrs, Lambdas.D_k, Lambdas.D_ks, LS_tol),...
-                         Nd, eigen_wanted, 'lm', opt );
-                     ev = [ev, pre_ev];
-                     ew = [ew, pre_ew];
-    end
-    
+        for i = 1 : (eigen_wanted / no_orth)
+            if i == 1
+                [pre_ev,pre_ew] = eigs( @(x) FAME_Matrix_Vector_Production_Isotropic_invAr_Simple( x, B, Nx, Ny, Nz, N,...
+                    Lambdas.Sigma_r, Lambdas.Pi_Qr, Lambdas.Pi_Qrs, Lambdas.D_k, Lambdas.D_ks, LS_tol),...
+                    Nd, no_orth, 'lm', opt );
+            else 
+                fun_mtx_uu = @(vec_x) ones(Nd,1) .* vec_x - (pre_ev * (pre_ev' * vec_x) );
+                fun_mtx_A = @(x) FAME_Matrix_Vector_Production_Isotropic_invAr_Simple( x, B, Nx, Ny, Nz, N,...
+                    Lambdas.Sigma_r, Lambdas.Pi_Qr, Lambdas.Pi_Qrs, Lambdas.D_k, Lambdas.D_ks, LS_tol);
+                fun_mtx_uAu = @(vec_x) fun_mtx_uu( fun_mtx_A( fun_mtx_uu(vec_x) ) );
+                
+                [pre_ev,pre_ew] = eigs( @(x)  fun_mtx_uAu(x), Nd, no_orth, 'lm', opt );
+
+            end
+                ev = [ev, pre_ev];
+                ew = [ew; diag(pre_ew)];
+        end
+        ew = diag(ew);
     else
     [ev,ew] = eigs( @(x) FAME_Matrix_Vector_Production_Isotropic_shift_invAr_Simple( x, B, Nx, Ny, Nz, N,...
                          Lambdas.Sigma_r, Lambdas.Pi_Qr, Lambdas.Pi_Qrs, Lambdas.D_k, Lambdas.D_ks, LS_tol, shift),...
@@ -102,4 +112,10 @@ function vec_y = FAME_Matrix_Vector_Production_Isotropic_preCM_Simple( vec_x, gr
               vec_y, LS_tol,1000 );
   
     
+end
+
+function vec_y = FAME_mxt_product_Iuu(vec_x, A, u, Nd)
+         vec_y = ones(Nd,1) .* vec_x - (u .* (u' * vec_x) );
+         vec_y = A * vec_y;
+         vec_y = ones(Nd,1) .* vec_y - (u .* (u' * vec_x) );
 end

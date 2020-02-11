@@ -2,10 +2,10 @@ function [ Popt ] = FAME_User_Option( Popt )
 %% Mesh setting
 ncell = 27;
 % n_supercell = [2 , 2];
-Popt.mesh.grid_num = [8,8,8] .* [1,1,1] * (ncell.^(1/3) );
+Popt.mesh.grid_num = [16,16,16] .* [1,1,1] * (ncell.^(1/3) );
 % Popt.mesh.grid_num = [16,16,16].*[sum(n_supercell), 1 , 1]; % The grid numbers
 %  Popt.mesh.grid_num = [16,16,16].*[1,  1 , sum(n_supercell)];
-Popt.eig.eigen_wanted  = 75;
+Popt.eig.eigen_wanted  = 20;
 %% Lattice settings
 % -------------------- settings for 'user_defined' -----------------------
 Popt.lattice.lattice_type     = 'user_defined';  % open for material
