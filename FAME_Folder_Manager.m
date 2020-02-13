@@ -6,7 +6,8 @@ end
 % addpath('C:\Users\User\Desktop\FAME_m_g071708\JD_SEP\precondition');
 % addpath('C:\Users\User\Desktop\FAME_m_g071708\JD_SEP\setting');
 % addpath('C:\Users\User\Desktop\FAME_m_g071708\JD_SEP\update');
-addpath('C:\Users\User\Desktop\FAME_m_g071708\SIRA');
+% addpath('C:\Users\User\Desktop\FAME_m_g071708-\SIRA');
+addpath('C:\Users\User\Desktop\FAME_m_g071708-test_for_git\PEC');
 %% First layer folder
 first_layer_folder_name = {'PACKAGE'};
 for i = 1:length(first_layer_folder_name)

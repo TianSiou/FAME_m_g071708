@@ -239,6 +239,11 @@ end
                 % ----------------------------------------------
                 % orthogonalize t against V and then nomalize it
                 % ----------------------------------------------
+                %%% modify by siu
+                if ew_order > 1
+                    init_Vec(:,1) = init_Vec(:,1) - ((init_Vec(:,1)' * EV(:, 1 : ew_order-1)) * EV(:, 1 : ew_order-1)' )';
+                end
+                %%%
                 for j = 1:iteno
                    ew_tmp        = mtxV(:,j)' * init_Vec(:,1);
                    init_Vec(:,1) = init_Vec(:,1) - ew_tmp * mtxV(:,j);
@@ -282,16 +287,30 @@ end
           jj               = min(RestartProjProbDim-1,ew_number+RestartProjProbDim-1);
           init_Vec(:,1:jj) = mtxV(:,1:iteno) * ritz_ev(1:iteno,2:jj+1);
 
-          k             = dim_eigsp; 
-          mtxV(:, k+1)  = ev_crnt;
-          k             = k + 1; 
+%%% modyfy by siu
+%           k             = dim_eigsp; 
+%           mtxV(:, k+1)  = ev_crnt;
+%           k             = k + 1; 
+% 
+%           mtxV(:,k+1:k+jj) = init_Vec(:,1:jj);
+%           k                = k + jj;
+% 
+% %           i            = dim_eigsp; 
+%           [i, mtxV(:,1:i)] = Gram_Schmidt(k, mtxV(:, 1:k));
+%           ProjProbDim      = i;
+%%%
+%%% modify by siu
+          if ( ew_order > 1 )
+              mtxV(:,1:ew_order-1) = EV(:,1:ew_order-1);
+          end
+          mtxV(:, ew_order)              = ev_crnt;
+          mtxV(:,ew_order+1:ew_order+jj) = init_Vec(:,1:jj);
+          jj                             = jj + ew_order;
 
-          mtxV(:,k+1:k+jj) = init_Vec(:,1:jj);
-          k                = k + jj;
-
-%           i            = dim_eigsp; 
-          [i, mtxV(:,1:i)] = Gram_Schmidt(k, mtxV(:, 1:k));
-          ProjProbDim      = i;
+          [i, mtxV(:,1:i)]      = Gram_Schmidt(jj, mtxV(:, 1:jj));
+          ProjProbDim           = i - ew_order + 1;
+          mtxV(:,1:ProjProbDim) = mtxV(:,ew_order:i);
+%%%
 
        end 
     end 
@@ -363,7 +382,8 @@ end
     for i = 2:ewno %RestartProjProbDim 
           if ( j1+1 <= ew_number+RestartProjProbDim-1 ) 
              if ( tmp_rsdl(i) <= vec_r_tol)
-                mtxV(:,k+1)          = init_Vec(:,j1+1);
+%                 mtxV(:,k+1)          = init_Vec(:,j1+1); %%% modify by
+%                 siu
                 EV(:,k+1)            = init_Vec(:,j1+1);
                 k                    = k + 1;
                 flag_cn(i)           = 1;
@@ -400,8 +420,10 @@ end
     %
     [i, mtxV(:,1:i)]          = Gram_Schmidt(k, mtxV(:, 1:k));
 %     ProjProbDim               = min(i, ew_number+RestartProjProbDim-1);
-ProjProbDim               = 5;
-    init_Vec(:,1:ProjProbDim) = mtxV(:,1:ProjProbDim);
+ProjProbDim               = 3;
+%     init_Vec(:,1:ProjProbDim) = mtxV(:,1:ProjProbDim); %%% modify by siu
+    init_Vec(:,1:ProjProbDim) = mtxV(:,k+1:k+ProjProbDim);   %%% let init_Vec orthgal to EV
+    ritz_ew                   = ritz_ew(2:ProjProbDim+1,1);
 
 % %     output(no_file, ew_order, EPIteNo, toc, ritz_ew(1), rsdl);
 
